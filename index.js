@@ -7,6 +7,9 @@
 			blur: 15
 		};
 
+	var totalDistance = 0;
+
+
 	function status( message ) {
 		$( '#currentStatus' ).text( message );
 	}
@@ -44,7 +47,7 @@
 
 	function stageTwo ( file ) {
     // Google Analytics event - heatmap upload file
-    ga('send', 'event', 'Heatmap', 'upload', undefined, file.size);
+    // ga('send', 'event', 'Heatmap', 'upload', undefined, file.size);
 
 		heat = L.heatLayer( [], heatOptions ).addTo( map );
 
@@ -66,20 +69,64 @@
 		$( '#intro' ).addClass( 'hidden' );
 		$( '#working' ).removeClass( 'hidden' );
 
-		var latlngs = [];
+		// var latlngs = [];
 
 		var os = new oboe();
 
+		var lat, curLat, toLat;
+		var lng, curLng, toLng;
+		var SCALAR_E7 = 0.0000001; // Since Google Takeout stores latlngs as integers
+		var activityType;
+		var confidence;
+		var distance;
+
 		os.node( 'locations.*', function ( location ) {
-			var SCALAR_E7 = 0.0000001; // Since Google Takeout stores latlngs as integers
-			if ( type === 'json' ) latlngs.push( [ location.latitudeE7 * SCALAR_E7, location.longitudeE7 * SCALAR_E7 ] );
+			// if ( type === 'json' ) latlngs.push( [ location.latitudeE7 * SCALAR_E7, location.longitudeE7 * SCALAR_E7 ] );
+			if ( type === 'json' ) {
+				lat = location.latitudeE7 * SCALAR_E7;
+				lng = location.longitudeE7 * SCALAR_E7;
+			}
+			// Set initial travel start position
+			if ((curLat == null) || (curLng == null)) {
+				curLat = lat;
+				curLng = lng;
+				return oboe.drop;
+			}
+
+			if (location.activity) {
+				toLat = lat;
+				toLng = lng;
+
+				// Find highest confidence activity
+				activityType = '';
+				confidence = 0;
+				location.activity.forEach(function(activity) {
+					if ((activity.activity[0].confidence > confidence) && (activity.activity[0].type != 'TILTING')) {
+						activityType = activity.activity[0].type;
+						confidence = activity.activity[0].confidence;
+					}
+				});
+
+				distance = distanceInKmBetweenEarthCoordinates(curLat, curLng, toLat, toLng);
+				totalDistance += distance;
+				console.log('total distance: ' + totalDistance + ' km');
+
+				// console.log('From ' + curLat + '/' + curLng + ' to ' + lat + '/' + lng + ' via ' + activityType + ' with confidence ' + confidence + ', distance: ' + distance + ' km');
+
+				// Update current position
+				curLat = toLat;
+				curLng = toLng;
+			}
 			return oboe.drop;
 		} ).done( function () {
-			status( 'Generating map...' );
-			heat._latlngs = latlngs;
+			console.log('total distance: ' + totalDistance + ' km');
 
-			heat.redraw();
-			stageThree(  /* numberProcessed */ latlngs.length );
+			status( 'Generating map...' );
+			// heat._latlngs = latlngs;
+
+
+			// heat.redraw();
+			stageThree(  /* numberProcessed */ 0 );
 
 		} );
 
@@ -94,7 +141,7 @@
 
 	function stageThree ( numberProcessed ) {
     // Google Analytics event - heatmap render
-    ga('send', 'event', 'Heatmap', 'render', undefined, numberProcessed);
+    // ga('send', 'event', 'Heatmap', 'render', undefined, numberProcessed);
 
 		var $done = $( '#done' );
 
@@ -107,20 +154,10 @@
 		$( '#numberProcessed' ).text( numberProcessed.toLocaleString() );
 
     $( '#launch' ).click( function () {
-      var $email = $( '#email' );
-      if ( $email.is( ':valid' ) ) {
-        $( this ).text( 'Launching... ' );
-        $.post( '/heatmap/submit-email.php', {
-          email: $email.val()
-        } )
-        .always( function () {
-          $( 'body' ).addClass( 'map-active' );
-          $done.fadeOut();
-          activateControls();
-        } );
-      } else {
-        alert( 'Please enter a valid email address to proceed.' );
-      }
+		$( this ).text( 'Launching... ' );
+		$( 'body' ).addClass( 'map-active' );
+		$done.fadeOut();
+		activateControls();
     } );
 
 		function activateControls () {
@@ -252,5 +289,25 @@
 
 		return locations;
 	}
+
+	// from https://gps-coordinates.org/js/distance.js
+	function degreesToRadians(degrees) {
+		return degrees * Math.PI / 180;
+	  }
+	  
+	  function distanceInKmBetweenEarthCoordinates(lat1, lon1, lat2, lon2) {
+		var earthRadiusKm = 6371;
+	  
+		var dLat = degreesToRadians(lat2-lat1);
+		var dLon = degreesToRadians(lon2-lon1);
+	  
+		lat1 = degreesToRadians(lat1);
+		lat2 = degreesToRadians(lat2);
+	  
+		var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+				Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
+		var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+		return earthRadiusKm * c;
+	  }
 
 }( jQuery, L, prettySize ) );
