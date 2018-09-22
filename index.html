@@ -44,6 +44,7 @@
             <!-- Content displayed once processing complete -->
             <div id="done" class="content-box hidden">
                 <h2>Render complete!</h2>
+                <div id="resultchart" style="width:600px; height:400px;"></div>
                 <p>Successfully processed <span id="numberProcessed">a lot of</span> data points to generate your heatmap. Please submit your email address to start exploring...</p>
                 <div class="email-form">
                     <input id="email" type="email" placeholder="Email address" />
@@ -93,6 +94,7 @@
 <script src="lib/leaflet.heat.min.js"></script>
 <script src="lib/prettysize.js"></script>
 <script src="lib/oboe-browser.min.js"></script>
+<script src="lib/echarts.js"></script>
 <script src="index.js"></script>
 
 <!-- BEGIN GOOGLE ANALYTICS -->

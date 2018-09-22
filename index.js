@@ -7,8 +7,10 @@
 			blur: 15
 		};
 
-	var totalDistance = 0;
+	var abortFlag = false;
 	var distancesByTypeAndMonth = [];
+	var months = [];
+	var activities = [];
 
 	function status( message ) {
 		$( '#currentStatus' ).text( message );
@@ -49,8 +51,6 @@
     // Google Analytics event - heatmap upload file
     // ga('send', 'event', 'Heatmap', 'upload', undefined, file.size);
 
-		heat = L.heatLayer( [], heatOptions ).addTo( map );
-
 		var type;
 
 		try {
@@ -75,6 +75,20 @@
 		var lng, curLng, toLng;
 		var SCALAR_E7 = 0.0000001; // Since Google Takeout stores latlngs as integers
 
+		var date = new Date();
+		var stopYear = date.getFullYear() - 1;
+		var stopMonth = date.getMonth();
+		var currentMonth;
+		var currentMonthIndex = 0;
+
+		// Init array
+		distancesByTypeAndMonth['IN_ROAD_VEHICLE'] = [];
+		distancesByTypeAndMonth['IN_RAIL_VEHICLE'] = [];
+		for (i = 0; i < 12; i++) {
+			distancesByTypeAndMonth['IN_ROAD_VEHICLE'][i] = 0;
+			distancesByTypeAndMonth['IN_RAIL_VEHICLE'][i] = 0;
+		}
+
 		os.node( 'locations.*', function ( location ) {
 			if (location.activity) {
 				if ( type === 'json' ) {
@@ -91,29 +105,49 @@
 				toLat = lat;
 				toLng = lng;
 
-
 				// Find highest confidence activity
 				var activityType = '';
 				var confidence = 0;
 				location.activity.forEach(function(activity) {
 					if ((activity.activity[0].confidence > confidence) && (activity.activity[0].type != 'TILTING')) {
-						activityType = activity.activity[0].type;
 						confidence = activity.activity[0].confidence;
+
+						// If IN_VEHICLE and a more precise type is available, use that one
+						if ((activity.activity[0].type == 'IN_VEHICLE') && (activity.activity.length > 1)){
+							activityType = activity.activity[1].type;
+						} else {
+							activityType = activity.activity[0].type;
+						}
 					}
 				});
 
 				if (confidence > 0) {
+					activities[activityType] = activityType;
+
 					var distance = distanceInKmBetweenEarthCoordinates(curLat, curLng, toLat, toLng);
 					var date = new Date(parseInt(location.timestampMs));
-					var month = date.getFullYear() + '/' + date.getMonth();
-					if (!distancesByTypeAndMonth[activityType]) distancesByTypeAndMonth[activityType] = [];
-					if (!distancesByTypeAndMonth[activityType][month]) {
-						distancesByTypeAndMonth[activityType][month] = distance;
-					} else {
-						distancesByTypeAndMonth[activityType][month] += distance;
+					if (currentMonth === undefined) {
+						currentMonth = date.getMonth();
+						months[currentMonthIndex] = date.getFullYear() + '/' + (date.getMonth()+1);
 					}
-					// totalDistance += distance;
-					// console.log('total distance: ' + totalDistance + ' km');
+					if (date.getMonth() != currentMonth) {
+						currentMonthIndex++;
+						if (currentMonthIndex >= 12) {
+							abortFlag = true;
+							this.abort();
+							stageThree(  /* numberProcessed */ 0 );
+							return oboe.drop;
+						}
+						currentMonth = date.getMonth();
+						months[currentMonthIndex] = date.getFullYear() + '/' + (date.getMonth()+1);
+					}
+
+					if (!distancesByTypeAndMonth[activityType]) distancesByTypeAndMonth[activityType] = [];
+					if (!distancesByTypeAndMonth[activityType][currentMonthIndex]) {
+						distancesByTypeAndMonth[activityType][currentMonthIndex] = distance;
+					} else {
+						distancesByTypeAndMonth[activityType][currentMonthIndex] += distance;
+					}
 				}
 
 				// Update current position
@@ -162,6 +196,95 @@
 
 		// Update count
 		$( '#numberProcessed' ).text( numberProcessed.toLocaleString() );
+
+		// Calculate CO2 footprint, round 
+		var co2ByMonth = [];
+		for (i = 0; i < 12; i++) {
+			co2ByMonth[i] = distancesByTypeAndMonth['IN_ROAD_VEHICLE'][i] * 140;
+			co2ByMonth[i] += distancesByTypeAndMonth['IN_RAIL_VEHICLE'][i] * 55;
+
+			distancesByTypeAndMonth['IN_ROAD_VEHICLE'][i] = Math.round(distancesByTypeAndMonth['IN_ROAD_VEHICLE'][i]);
+			distancesByTypeAndMonth['IN_RAIL_VEHICLE'][i] = Math.round(distancesByTypeAndMonth['IN_RAIL_VEHICLE'][i]);
+
+			co2ByMonth[i] = Math.round(co2ByMonth[i] / 1000 * 100) / 100; // kg
+		}
+		console.log(co2ByMonth);
+
+		// Draw result chart
+		var resultChart = echarts.init(document.getElementById('resultchart'));
+		var dataSeries = [];
+
+		activities.forEach( function(activity) {
+			console.log(activity);
+			var data = [];
+			data['name'] = activity;
+			data['type'] = 'bar';
+			data['data'] = distancesByTypeAndMonth[activity];
+			dataSeries.push(data);
+		} );
+		console.log(dataSeries);
+		var option = {
+            title: {
+                text: 'My CO2 footprint (car & rail)'
+            },
+			tooltip: {
+				trigger: 'axis',
+				axisPointer: {
+					type: 'cross',
+					crossStyle: {
+						color: '#999'
+					}
+				}
+			},
+			legend: {
+                data: activities
+            },
+            xAxis: {
+				type: 'category',
+                data: months,
+				axisPointer: {
+					type: 'shadow'
+				}
+			},
+            yAxis: [
+				{
+					type: 'value',
+					name: 'km',
+					min: 0,
+					axisLabel: {
+						formatter: '{value} km'
+					}
+				},
+				{
+					type: 'value',
+					name: 'CO2',
+					min: 0,
+					axisLabel: {
+						formatter: '{value} kg'
+					}
+				}
+			],
+            series: [
+				{
+					name: 'Car',
+					type: 'bar',
+					data: distancesByTypeAndMonth['IN_ROAD_VEHICLE']
+				},
+				{
+					name: 'Train',
+					type: 'bar',
+					data: distancesByTypeAndMonth['IN_RAIL_VEHICLE']
+				},
+				{
+					name:'CO2',
+					type:'line',
+					yAxisIndex: 1,
+					data: co2ByMonth
+				}
+			]
+		};
+		console.log(option);
+		resultChart.setOption(option);
 
     $( '#launch' ).click( function () {
 		$( this ).text( 'Launching... ' );
@@ -227,6 +350,11 @@
 		var startTime = Date.now();
 		var endTime = Date.now();
 		var readEventHandler = function ( evt ) {
+			if (evt == 'abort') {
+				console.log('received abort, emitting done');
+				oboeInstance.emit( 'done' );
+				return;
+			}
 			if ( evt.target.error == null ) {
 				offset += evt.target.result.length;
 				var chunk = evt.target.result;
@@ -246,6 +374,11 @@
 		}
 
 		chunkReaderBlock = function ( _offset, length, _file ) {
+			if (abortFlag) {
+				console.log('abortFlag received');
+				readEventHandler('abort');
+				return;
+			}
 			var r = new FileReader();
 			var blob = _file.slice( _offset, length + _offset );
 			r.onload = readEventHandler;
