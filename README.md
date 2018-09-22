@@ -1,24 +1,25 @@
-# location-history-visualizer
+# myco2footprint
 
 **Available online: [locationhistoryvisualizer.com/heatmap/](https://locationhistoryvisualizer.com/heatmap/)**
 
-A tool for visualizing your complete, consolidated, collected Google [Location History](https://google.com/locationhistory).
+A tool for estimating your CO2 footprint from your Google [Location History](https://google.com/locationhistory).
 
 It works directly in your web browser &ndash; no software to download, no packages to install. **Everyone deserves to know what data is being collected about them, without having to fiddle with cryptic pieces of software.**
 
-*location-history-visualizer* takes raw Google Takeout output and produces a heatmap of all of your location data over time, overlaid on an interactive map.
+*My CO2 Footprint* takes raw Google Takeout output and generates a graph of your monthly CO2 emissions for car & rail usage of the past 12 months.
 
 ## Packages used
-* [leaflet.js](http://leafletjs.com/), for rendering the interactive map
+* [leaflet.js](http://leafletjs.com/), for rendering the background map
 * [leaflet.heat](https://github.com/Leaflet/Leaflet.heat), for rendering the heatmap overlay
 * [filestream](https://github.com/DamonOehlman/filestream), for dealing with gigantic Google Takeout files
 * [oboe.js](http://oboejs.com), for processing said gigantic files
 * [browserify](http://browserify.org/), for helping filestream  work properly in the browser
+* [echarts.js](https://ecomfe.github.io/echarts-doc/public/en/index.html), for creating the graph
 
 
 ## License
 
-Copyright (C) 2014 Theopolisme <theopolismewiki@gmail.com>
+Copyright (C) 2018 Dominik Sommer <dominik@sommer.name>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

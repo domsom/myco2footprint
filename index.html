@@ -3,29 +3,25 @@
 <head>
     <title>My CO2 footprint</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="Visualize your collected Google Location History data using an interactive heatmap directly in your browser.">
-    <link href="../css/style.css" rel="stylesheet">
+    <meta name="description" content="Estimate your CO2 footprint based on your Google location history">
     <link rel="stylesheet" href="index.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css"/>
 </head>
 <body>
 <div class="visualizer">
     <!-- Fork me on GitHub -->
-    <a id="forkme" href="https://github.com/theopolisme/location-history-visualizer" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/52760788cde945287fbb584134c4cbc2bc36f904/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f77686974655f6666666666662e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_white_ffffff.png"></a>
+    <a id="forkme" href="https://github.com/domsom/myco2footprint" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/52760788cde945287fbb584134c4cbc2bc36f904/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f77686974655f6666666666662e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_white_ffffff.png"></a>
 
-    <!-- Shown before the heatmap is displayed -->
+    <!-- Shown initially -->
     <div class="container">
         <div class="content">
             <!-- Intro, before data has been uploaded -->
             <div id="intro" class="content-box">
-                <h2>Location History Visualizer</h2>
-                <div class="note">
-                    <strong>Note:</strong> This tool only generates heatmaps. If you're looking for minute-by-minute analysis of your Location History, including accuracy information, location-based search, advanced filtering and measurement tools, and more, check out <strong><a href="/">Location History Visualizer Pro</a></strong>.
-                </div>
-                <p>Welcome to <b>Location History Visualizer</b>, a tool for visualizing your collected Google <a href="https://google.com/locationhistory" target="_blank">Location History</a> data with heatmaps. <i>Don't worry&mdash;all processing and visualization happens directly on your computer, so rest assured that nobody is able to access your Location History but you... and Google, of course.</i></p>
-                <p>To start off, you'll need to go to <a href="https://google.com/takeout" target="_blank">Google Takeout</a> to download your Location History data: on that page, deselect everything except Location History by clicking "Select none" and then reselecting "Location History". Then hit "Next" and, finally, click "Create archive". Once the archive has been created, click "Download". Unzip the downloaded file, and open the "Location History" folder within. <b>Then, drag and drop <i>LocationHistory.json</i> from inside that folder onto this page.</b> Let the visualization begin!</p>
+                <h2>My CO2 Footprint</h2>
+                <p>Welcome to <b>My CO2 Footprint</b>, a tool for estimating your CO2 footprint based on your <a href="https://google.com/locationhistory" target="_blank">Google Location History</a>. <i>Don't worry&mdash;all processing and visualization happens directly on your computer, so rest assured that nobody is able to access your Location History but you... and Google, of course.</i></p>
+                <p>To start off, you'll need to go to <a href="https://google.com/takeout" target="_blank">Google Takeout</a> to download your Location History data: on that page, deselect everything except Location History by clicking "Select none" and then reselecting "Location History". Then hit "Next" and, finally, click "Create archive". Once the archive has been created, click "Download". Unzip the downloaded file, and open the "Location History" folder within. <b>Then, drag and drop <i>LocationHistory.json</i> from inside that folder onto this page.</b></p>
                 <p class="fallback">Alternatively, select your <b>LocationHistory.json</b> file directly: <input name="file" type="file" id="file"></input></p>
-                <p class="credit">An <a target="_blank" href="https://github.com/theopolisme/location-history-visualizer">open source</a> project by the makers of <a href="/">Location History Visualizer Pro</a>.</p>
+                <p class="credit">An <a target="_blank" href="https://github.com/domsom/myco2footprint">open source</a> project by Dominik Sommer inspired by <a href="http://www.twitter.com/BeLufthansa">@BeLufthansa</a>'s #MakersOfTomorrow.</p>
             </div>
 
             <!-- Shown in interim while processing is in progress -->
@@ -38,49 +34,23 @@
                 </div>
                 <p><span id="currentStatus">Waking up...</span></p>
                 <p>This may take a while... sit back, get a cup of tea or something.</p>
-                <p><i>Why does it take so long?</i> Depending on how long Google's been tracking your location, you may have hundreds of thousands of [latitude, longitude] pairs, every one of which must be loaded, analyzed, and plotted. That's a lot of dots.</p>
+                <p><i>Why does it take so long?</i> Depending on how long Google's been tracking your location, you may have hundreds of thousands of [latitude, longitude] pairs, every one of which must be loaded &amp; analyzed.</p>
             </div>
 
             <!-- Content displayed once processing complete -->
             <div id="done" class="content-box hidden">
-                <h2>Render complete!</h2>
+                <h2>Your CO2 Footprint for car & rail</h2>
                 <div id="resultchart" style="width:600px; height:400px;"></div>
-                <p>Successfully processed <span id="numberProcessed">a lot of</span> data points to generate your heatmap. Please submit your email address to start exploring...</p>
+                <p>Note: CO2 emissions per km are based on <a href="https://www.vcd.org/themen/klimafreundliche-mobilitaet/verkehrsmittel-im-vergleich/">national 2016 averages for Germany</a>, and averaged for rail. As Google doesn't differentiate between car & bus, the calculation assumes solely car emissions at the moment.</p>
+                <!--
                 <div class="email-form">
                     <input id="email" type="email" placeholder="Email address" />
                     <button id="launch">Launch heatmap</button>
                 </div>
-                <p>Usage tips: <i>Zoom</i> by scrolling, double-clicking, or using the buttons in the upper lefthand corner. <i>Navigate</i> by clicking and dragging. Hover over the menu in the lower lefthand corner to customize the heatmap rendering.</p>
                 <div class="disclaimer">By submitting your email address you agree to receive interesting communications from the Location History Visualizer team from time to time. If you're not interested, you can unsubscribe immediately.</div>
-                <p class="credit">An <a target="_blank" href="https://github.com/theopolisme/location-history-visualizer">open source</a> project by the makers of <a href="/">Location History Visualizer Pro</a>.</p>
+                -->
+                <p class="credit">An <a target="_blank" href="https://github.com/domsom/myco2footprint">open source</a> project by Dominik Sommer inspired by <a href="http://www.twitter.com/BeLufthansa">@BeLufthansa</a>'s #MakersOfTomorrow.</p>
             </div>
-        </div>
-    </div>
-
-    <!-- Appear when heatmap is displayed -->
-    <div id="controls">
-        <div class="title">
-            Location History Visualizer
-            <span>(hover for additional controls)</span>
-        </div>
-        <div class="control-block">
-            <label for="radius">Point radius</label>
-            <input type="range" min="1" max="30" id="radius" class="control">
-        </div>
-        <div class="control-block">
-            <label for="blur">Blur radius</label>
-            <input type="range" min="1" max="25" id="blur" class="control">
-        </div>
-        <div class="control-block">
-            <label for="heatOpacity">Heat opacity</label>
-            <input type="range" min="0" max="1" step="0.05" id="heatOpacity" class="control">
-        </div>
-        <div class="control-block">
-            <label for="tileOpacity">Map opacity</label>
-            <input type="range" min="0" max="1" step="0.05" id="tileOpacity" class="control">
-        </div>
-        <div class="control-block actions">
-            <button id="reset">Reset to defaults</button>
         </div>
     </div>
 

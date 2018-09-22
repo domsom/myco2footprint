@@ -1,11 +1,5 @@
 ( function ( $, L, prettySize ) {
-	var map, heat,
-		heatOptions = {
-			tileOpacity: 1,
-			heatOpacity: 1,
-			radius: 25,
-			blur: 15
-		};
+	var map;
 
 	var abortFlag = false;
 	var distancesByTypeAndMonth = [];
@@ -24,9 +18,7 @@
 		// Initialize the map
 		map = L.map( 'map' ).setView( [0,0], 2 );
 		L.tileLayer( 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-			attribution: 'location-history-visualizer is open source and available <a href="https://github.com/theopolisme/location-history-visualizer">on GitHub</a>. Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors.',
-			maxZoom: 18,
-			minZoom: 2
+			attribution: 'My CO2 Footprint is open source and available <a href="https://github.com/domsom/myco2footprint">on GitHub</a>. Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors.',
 		} ).addTo( map );
 
 		// Initialize the dropzone
@@ -76,8 +68,6 @@
 		var SCALAR_E7 = 0.0000001; // Since Google Takeout stores latlngs as integers
 
 		var date = new Date();
-		var stopYear = date.getFullYear() - 1;
-		var stopMonth = date.getMonth();
 		var currentMonth;
 		var currentMonthIndex = 0;
 
@@ -156,15 +146,7 @@
 			}
 			return oboe.drop;
 		} ).done( function () {
-			// console.log('total distance: ' + totalDistance + ' km');
-			console.log('done');
-			console.log(distancesByTypeAndMonth);
-
 			status( 'Generating map...' );
-			// heat._latlngs = latlngs;
-
-
-			// heat.redraw();
 			stageThree(  /* numberProcessed */ 0 );
 
 		} ).fail(function(err) {
@@ -194,9 +176,6 @@
 		$( '#working' ).addClass( 'hidden' );
 		$done.removeClass( 'hidden' );
 
-		// Update count
-		$( '#numberProcessed' ).text( numberProcessed.toLocaleString() );
-
 		// Calculate CO2 footprint, round 
 		var co2ByMonth = [], avgCo2ByMonth = [];
 		for (i = 0; i < 12; i++) {
@@ -212,20 +191,9 @@
 
 		// Draw result chart
 		var resultChart = echarts.init(document.getElementById('resultchart'));
-		var dataSeries = [];
-
-		activities.forEach( function(activity) {
-			console.log(activity);
-			var data = [];
-			data['name'] = activity;
-			data['type'] = 'bar';
-			data['data'] = distancesByTypeAndMonth[activity];
-			dataSeries.push(data);
-		} );
-		console.log(dataSeries);
 		var option = {
             title: {
-                text: 'My CO2 footprint (car & rail)'
+                // text: 'My CO2 footprint (car & rail)'
             },
 			tooltip: {
 				trigger: 'axis',
@@ -289,57 +257,7 @@
 				}
 			]
 		};
-		console.log(option);
 		resultChart.setOption(option);
-
-    $( '#launch' ).click( function () {
-		$( this ).text( 'Launching... ' );
-		$( 'body' ).addClass( 'map-active' );
-		$done.fadeOut();
-		activateControls();
-    } );
-
-		function activateControls () {
-			var $tileLayer = $( '.leaflet-tile-pane' ),
-				$heatmapLayer = $( '.leaflet-heatmap-layer' ),
-				originalHeatOptions = $.extend( {}, heatOptions ); // for reset
-
-			// Update values of the dom elements
-			function updateInputs () {
-				var option;
-				for ( option in heatOptions ) {
-					if ( heatOptions.hasOwnProperty( option ) ) {
-						document.getElementById( option ).value = heatOptions[option];
-					}
-				}
-			}
-
-			updateInputs();
-
-			$( '.control' ).change( function () {
-				switch ( this.id ) {
-					case 'tileOpacity':
-						$tileLayer.css( 'opacity', this.value );
-						break;
-					case 'heatOpacity':
-						$heatmapLayer.css( 'opacity', this.value );
-						break;
-					default:
-						heatOptions[ this.id ] = Number( this.value );
-						heat.setOptions( heatOptions );
-						break;
-				}
-			} );
-
-			$( '#reset' ).click( function () {
-				$.extend( heatOptions, originalHeatOptions );
-				updateInputs();
-				heat.setOptions( heatOptions );
-				// Reset opacity too
-				$heatmapLayer.css( 'opacity', originalHeatOptions.heatOpacity );
-				$tileLayer.css( 'opacity', originalHeatOptions.tileOpacity );
-			} );
-		}
 	}
 
 	/*
