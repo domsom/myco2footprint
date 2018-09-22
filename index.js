@@ -41,7 +41,7 @@
 
 	function stageTwo ( file ) {
     // Google Analytics event - heatmap upload file
-    // ga('send', 'event', 'Heatmap', 'upload', undefined, file.size);
+    ga('send', 'event', 'MyCO2Footprint', 'upload', undefined, file.size);
 
 		var type;
 
@@ -165,9 +165,7 @@
 
 	function stageThree ( numberProcessed ) {
     // Google Analytics event - heatmap render
-    // ga('send', 'event', 'Heatmap', 'render', undefined, numberProcessed);
-
-		console.log('stageThree');
+    ga('send', 'event', 'MyCO2Footprint', 'resultGraph', undefined, numberProcessed);
 
 		var $done = $( '#done' );
 
