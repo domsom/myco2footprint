@@ -8,7 +8,7 @@
 		};
 
 	var totalDistance = 0;
-
+	var distancesByTypeAndMonth = [];
 
 	function status( message ) {
 		$( '#currentStatus' ).text( message );
@@ -69,37 +69,32 @@
 		$( '#intro' ).addClass( 'hidden' );
 		$( '#working' ).removeClass( 'hidden' );
 
-		// var latlngs = [];
-
 		var os = new oboe();
 
 		var lat, curLat, toLat;
 		var lng, curLng, toLng;
 		var SCALAR_E7 = 0.0000001; // Since Google Takeout stores latlngs as integers
-		var activityType;
-		var confidence;
-		var distance;
 
 		os.node( 'locations.*', function ( location ) {
-			// if ( type === 'json' ) latlngs.push( [ location.latitudeE7 * SCALAR_E7, location.longitudeE7 * SCALAR_E7 ] );
-			if ( type === 'json' ) {
-				lat = location.latitudeE7 * SCALAR_E7;
-				lng = location.longitudeE7 * SCALAR_E7;
-			}
-			// Set initial travel start position
-			if ((curLat == null) || (curLng == null)) {
-				curLat = lat;
-				curLng = lng;
-				return oboe.drop;
-			}
-
 			if (location.activity) {
+				if ( type === 'json' ) {
+					lat = location.latitudeE7 * SCALAR_E7;
+					lng = location.longitudeE7 * SCALAR_E7;
+				}
+				// Set initial travel start position
+				if ((curLat == null) || (curLng == null)) {
+					curLat = lat;
+					curLng = lng;
+					return oboe.drop;
+				}
+
 				toLat = lat;
 				toLng = lng;
 
+
 				// Find highest confidence activity
-				activityType = '';
-				confidence = 0;
+				var activityType = '';
+				var confidence = 0;
 				location.activity.forEach(function(activity) {
 					if ((activity.activity[0].confidence > confidence) && (activity.activity[0].type != 'TILTING')) {
 						activityType = activity.activity[0].type;
@@ -107,11 +102,19 @@
 					}
 				});
 
-				distance = distanceInKmBetweenEarthCoordinates(curLat, curLng, toLat, toLng);
-				totalDistance += distance;
-				console.log('total distance: ' + totalDistance + ' km');
-
-				// console.log('From ' + curLat + '/' + curLng + ' to ' + lat + '/' + lng + ' via ' + activityType + ' with confidence ' + confidence + ', distance: ' + distance + ' km');
+				if (confidence > 0) {
+					var distance = distanceInKmBetweenEarthCoordinates(curLat, curLng, toLat, toLng);
+					var date = new Date(parseInt(location.timestampMs));
+					var month = date.getFullYear() + '/' + date.getMonth();
+					if (!distancesByTypeAndMonth[activityType]) distancesByTypeAndMonth[activityType] = [];
+					if (!distancesByTypeAndMonth[activityType][month]) {
+						distancesByTypeAndMonth[activityType][month] = distance;
+					} else {
+						distancesByTypeAndMonth[activityType][month] += distance;
+					}
+					// totalDistance += distance;
+					// console.log('total distance: ' + totalDistance + ' km');
+				}
 
 				// Update current position
 				curLat = toLat;
@@ -119,7 +122,9 @@
 			}
 			return oboe.drop;
 		} ).done( function () {
-			console.log('total distance: ' + totalDistance + ' km');
+			// console.log('total distance: ' + totalDistance + ' km');
+			console.log('done');
+			console.log(distancesByTypeAndMonth);
 
 			status( 'Generating map...' );
 			// heat._latlngs = latlngs;
@@ -128,7 +133,10 @@
 			// heat.redraw();
 			stageThree(  /* numberProcessed */ 0 );
 
-		} );
+		} ).fail(function(err) {
+			console.log('failed!');
+			console.log(err);
+		});
 
 		var fileSize = prettySize( file.size );
 
@@ -142,6 +150,8 @@
 	function stageThree ( numberProcessed ) {
     // Google Analytics event - heatmap render
     // ga('send', 'event', 'Heatmap', 'render', undefined, numberProcessed);
+
+		console.log('stageThree');
 
 		var $done = $( '#done' );
 
