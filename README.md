@@ -1,6 +1,6 @@
 # myco2footprint
 
-**Available online: [locationhistoryvisualizer.com/heatmap/](https://locationhistoryvisualizer.com/heatmap/)**
+**Available online: [http://myco2footprint.project23.de](http://myco2footprint.project23.de)**
 
 A tool for estimating your CO2 footprint from your Google [Location History](https://google.com/locationhistory).
 
