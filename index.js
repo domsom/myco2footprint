@@ -255,6 +255,8 @@
 				}
 			]
 		};
+		console.log(JSON.stringify(option));
+		console.log(btoa(JSON.stringify(option)));
 		resultChart.setOption(option);
 	}
 

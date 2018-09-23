@@ -10,7 +10,6 @@ It works directly in your web browser &ndash; no software to download, no packag
 
 ## Packages used
 * [leaflet.js](http://leafletjs.com/), for rendering the background map
-* [leaflet.heat](https://github.com/Leaflet/Leaflet.heat), for rendering the heatmap overlay
 * [filestream](https://github.com/DamonOehlman/filestream), for dealing with gigantic Google Takeout files
 * [oboe.js](http://oboejs.com), for processing said gigantic files
 * [browserify](http://browserify.org/), for helping filestream  work properly in the browser
