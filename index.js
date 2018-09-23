@@ -254,8 +254,8 @@
 				}
 			]
 		};
-		console.log(JSON.stringify(option));
-		console.log(btoa(JSON.stringify(option)));
+		// Customize facebook share button
+		document.getElementById('fb-share-button').setAttribute('src', 'https://www.facebook.com/plugins/share_button.php?href=http%3A%2F%2Fmyco2footprint.project23.de/show.html?data='+btoa(JSON.stringify(option))+'%2F&layout=button&size=large&mobile_iframe=true&appId=324168168392224&width=72&height=28');
 		resultChart.setOption(option);
 	}
 
