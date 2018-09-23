@@ -191,7 +191,7 @@
 			}
 		}
 		// Set average graph
-		avgCo2 = avgCo2 / avgRelevantMonths;
+		avgCo2 = Math.round(avgCo2 / avgRelevantMonths * 100) / 100;
 		for (i = 0; i < 12; i++) {
 			avgCo2ByMonth[i] = avgCo2;
 		}
