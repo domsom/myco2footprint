@@ -173,8 +173,9 @@
 		$( '#working' ).addClass( 'hidden' );
 		$done.removeClass( 'hidden' );
 
-		// Calculate CO2 footprint, round 
+		// Calculate CO2 footprint, round distances
 		var co2ByMonth = [], avgCo2ByMonth = [];
+		var avgCo2 = 0, avgRelevantMonths = 0;
 		for (i = 0; i < 12; i++) {
 			co2ByMonth[i] = distancesByTypeAndMonth['IN_ROAD_VEHICLE'][i] * 140;
 			co2ByMonth[i] += distancesByTypeAndMonth['IN_RAIL_VEHICLE'][i] * 55;
@@ -183,7 +184,16 @@
 			distancesByTypeAndMonth['IN_RAIL_VEHICLE'][i] = Math.round(distancesByTypeAndMonth['IN_RAIL_VEHICLE'][i]);
 
 			co2ByMonth[i] = Math.round(co2ByMonth[i] / 1000 * 100) / 100; // kg
-			avgCo2ByMonth[i] = 200;
+
+			if (co2ByMonth[i] > 0) {
+				avgCo2 += co2ByMonth[i];
+				avgRelevantMonths++;
+			}
+		}
+		// Set average graph
+		avgCo2 = avgCo2 / avgRelevantMonths;
+		for (i = 0; i < 12; i++) {
+			avgCo2ByMonth[i] = avgCo2;
 		}
 
 		// Draw result chart
@@ -246,13 +256,13 @@
 					yAxisIndex: 1,
 					data: co2ByMonth
 				}
-				// ,
-				// {
-				// 	name:'Average CO2',
-				// 	type:'line',
-				// 	yAxisIndex: 1,
-				// 	data: avgCo2ByMonth
-				// }
+				,
+				{
+					name:'Average CO2',
+					type:'line',
+					yAxisIndex: 1,
+					data: avgCo2ByMonth
+				}
 			]
 		};
 		// Customize facebook share button
