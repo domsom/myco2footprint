@@ -245,13 +245,14 @@
 					type:'line',
 					yAxisIndex: 1,
 					data: co2ByMonth
-				},
-				{
-					name:'Average CO2',
-					type:'line',
-					yAxisIndex: 1,
-					data: avgCo2ByMonth
 				}
+				// ,
+				// {
+				// 	name:'Average CO2',
+				// 	type:'line',
+				// 	yAxisIndex: 1,
+				// 	data: avgCo2ByMonth
+				// }
 			]
 		};
 		// Customize facebook share button
