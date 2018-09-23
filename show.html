@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-126287352-1"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-126287352-1');
+    </script>
+    <title>My CO2 footprint</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="Estimate your CO2 footprint based on your Google location history">
+    <link rel="stylesheet" href="index.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css"/>
+</head>
+<body>
+<div class="visualizer">
+    <!-- Shown initially -->
+    <div class="container">
+        <div class="content">
+            <!-- Content displayed once processing complete -->
+            <div id="done" class="content-box">
+                <h2>Your CO2 Footprint for road & rail</h2>
+                <div id="resultchart" style="width:600px; height:400px;"></div>
+                <p>Note: CO2 emissions per km are based on <a href="https://www.vcd.org/themen/klimafreundliche-mobilitaet/verkehrsmittel-im-vergleich/">national 2016 averages for Germany</a>, and averaged for rail. As Google doesn't differentiate between car & bus, the calculation assumes solely car emissions at the moment.</p>
+                <p class="credit">An <a target="_blank" href="https://github.com/domsom/myco2footprint">open source</a> project by <a href="https://www.linkedin.com/in/dominiksommer">Dominik Sommer</a> inspired by <a href="http://www.twitter.com/BeLufthansa">@BeLufthansa</a>'s #MakersOfTomorrow.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- The map, populated by leaflet.js -->
+    <div id="map"></div>
+</div>
+
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+<script src="lib/prettysize.js"></script>
+<script src="lib/echarts.common.min.js"></script>
+<script src="show.js"></script>
+
+</body>
+</html>
